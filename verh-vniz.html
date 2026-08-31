@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BEYN — VERH VNIZ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #000000;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            font-family: 'Courier New', Courier, 'Lucida Sans Typewriter', monospace;
+        }
+        .window {
+            background: #c0c0c0;
+            border: 3px outset #ffffff;
+            border-right-color: #808080;
+            border-bottom-color: #808080;
+            padding: 10px 10px 14px 10px;
+            max-width: 820px;
+            width: 100%;
+            box-shadow: 8px 8px 0 #1a1a1a, 0 0 0 2px #000000;
+        }
+        .title-bar {
+            background: #000080;
+            color: #ffffff;
+            padding: 4px 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: space-between;
+            border: 2px inset #dfdfdf;
+            border-right-color: #808080;
+            border-bottom-color: #808080;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+        .title-bar span {
+            background: #c0c0c0;
+            color: #000;
+            padding: 0 8px;
+            font-size: 0.7rem;
+            border: 2px outset #fff;
+            border-right-color: #808080;
+            border-bottom-color: #808080;
+            line-height: 1.4;
+        }
+        .player-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 12px;
+            align-items: flex-start;
+            background: #a8a8a8;
+            border: 3px inset #dfdfdf;
+            border-right-color: #808080;
+            border-bottom-color: #808080;
+            padding: 8px;
+        }
+        .cover-small {
+            width: 110px;
+            height: 110px;
+            flex-shrink: 0;
+            border: 3px outset #fff;
+            border-right-color: #808080;
+            border-bottom-color: #808080;
+            background: #000;
+        }
+        .cover-small img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            filter: grayscale(0.6) contrast(1.4) brightness(0.9);
+            image-rendering: pixelated;
+        }
+        .player-controls {
+            flex: 1;
+            min-width: 180px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: #b8b8b8;
+            border: 2px inset #fff;
+            border-right-color: #808080;
+            border-bottom-color: #808080;
+            padding: 8px 10px;
+        }
+        .player-controls .row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .player-controls button {
+            background: #d0d0d0;
+            border: 3px outset #ffffff;
+            border-right-color: #808080;
+            border-bottom-color: #808080;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 1.0rem;
+            padding: 2px 14px;
+            cursor: pointer;
+            color: #000;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .player-controls button:active {
+            border: 3px inset #fff;
+            border-right-color: #fff;
+            border-bottom-color: #fff;
+            background: #b0b0b0;
+        }
+        .player-controls input[type="range"] {
+            flex: 1;
+            min-width: 60px;
+            -webkit-appearance: none;
+            background: #808080;
+            height: 12px;
+            border: 2px inset #fff;
+            border-right-color: #404040;
+            border-bottom-color: #404040;
+        }
+        .player-controls input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 18px;
+            background: #c0c0c0;
+            border: 2px outset #fff;
+            border-right-color: #808080;
+            border-bottom-color: #808080;
+            cursor: pointer;
+        }
+        .player-controls .time-label {
+            font-size: 0.8rem;
+            background: #a0a0a0;
+            padding: 0 8px;
+            border: 2px inset #fff;
+            border-right-color: #808080;
+            border-bottom-color: #808080;
+            font-weight: bold;
+            min-width: 80px;
+            text-align: center;
+        }
+        .player-controls .vol-label {
+            font-size: 0.7rem;
+            background: #a0a0a0;
+            padding: 0 6px;
+            border: 2px inset #fff;
+            border-right-color: #808080;
+            border-bottom-color: #808080;
+        }
+        .karaoke-box {
+            background: #d0d0d0;
+            border: 4px inset #ffffff;
+            border-right-color: #808080;
+            border-bottom-color: #808080;
+            padding: 12px 14px;
+            margin-top: 8px;
+            min-height: 120px;
+            max-height: 220px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #000;
+            position: relative;
+        }
+        .karaoke-box .line {
+            padding: 2px 4px;
+            transition: none;
+            border-left: 3px solid transparent;
+        }
+        .karaoke-box .line.active {
+            background: #000080;
+            color: #ffffff;
+            border-left-color: #ffcc00;
+            font-weight: bold;
+        }
+        /* кнопка караоке */
+        .karaoke-toggle {
+            background: #d0d0d0;
+            border: 3px outset #ffffff;
+            border-right-color: #808080;
+            border-bottom-color: #808080;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            padding: 4px 16px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: #000;
+        }
+        .karaoke-toggle.active {
+            background: #808080;
+            border: 3px inset #fff;
+            border-right-color: #fff;
+            border-bottom-color: #fff;
+        }
+        .status-bar {
+            margin-top: 16px;
+            background: #b0b0b0;
+            border: 3px inset #ffffff;
+            border-right-color: #808080;
+            border-bottom-color: #808080;
+            padding: 4px 10px;
+            font-size: 0.7rem;
+            display: flex;
+            justify-content: space-between;
+            color: #000;
+            letter-spacing: 1px;
+            flex-wrap: wrap;
+        }
+        .status-bar span {
+            background: #a0a0a0;
+            padding: 0 8px;
+            border: 2px inset #fff;
+            border-right-color: #808080;
+            border-bottom-color: #808080;
+            font-size: 0.6rem;
+        }
+        @media (max-width: 600px) {
+            .player-area { flex-direction: column; align-items: center; }
+            .cover-small { width: 100%; max-width: 200px; height: auto; aspect-ratio: 1/1; }
+            .player-controls { width: 100%; }
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            background-image: radial-gradient(circle at 2px 2px, rgba(0,0,0,0.1) 1px, transparent 1px);
+            background-size: 4px 4px;
+            opacity: 0.25;
+            z-index: 999;
+        }
+        .window { position: relative; }
+    </style>
+</head>
+<body>
+<div class="window">
+
+    <div class="title-bar">
+        <span>♫ BEYN · VERH VNIZ</span>
+        <a href="/index.html"><span>вернуться назад</span></a>
+    </div>
+
+    <!-- плеер + обложка -->
+    <div class="player-area">
+        <div class="cover-small">
+            <img src="files/verhvniz.png" alt="cover">
+        </div>
+        <div class="player-controls">
+            <div class="row">
+                <button id="playBtn">▶</button>
+                <button id="stopBtn">■</button>
+                <span class="time-label" id="timeDisplay">00:00 / 00:00</span>
+            </div>
+            <div class="row">
+                <input type="range" id="seekBar" min="0" max="100" value="0">
+            </div>
+            <div class="row">
+                <span class="vol-label">🔊</span>
+                <input type="range" id="volumeControl" min="0" max="100" value="80">
+                <span class="vol-label" id="volDisplay">80%</span>
+                <button class="karaoke-toggle" id="karaokeToggle">караоке</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- караоке-текст -->
+    <div class="karaoke-box" id="karaokeBox">
+    </div>
+
+    <!-- статус -->
+    <div class="status-bar">
+        <span>copyright doofenshmirtz evil inc</span>
+        <span>burned cd of beyn 2026</span>
+    </div>
+</div>
+
+<script>
+    (function() {
+        const audio = new Audio('/files/4 beyn - verh vniz.mp3');
+        audio.crossOrigin = 'anonymous';
+        audio.loop = false;
+
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const seekBar = document.getElementById('seekBar');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const volumeControl = document.getElementById('volumeControl');
+        const volDisplay = document.getElementById('volDisplay');
+        const karaokeToggle = document.getElementById('karaokeToggle');
+        const karaokeBox = document.getElementById('karaokeBox');
+
+        let isPlaying = false;
+        let isKaraokeOn = false;
+        let updateInterval = null;
+
+        const lyrics = [
+            [0.0, "***"],
+            [2.8, "делай как я"],
+            [4.5, "вверх и вниз, вверх и вниз"],
+            [6.1, "ты почувствуешь, что я чувствую"],
+            [8.0, "мы запишем дисс"],
+            [9.5, "нам не надо"],
+            [11.0, "громкие слёзы, я про них"],
+            [12.7, "расскажешь дома, как тебе было приятно"],
+            [15.3, "жить с этим"],
+            [16.0, "(во-оу) ну и что"],
+            [17.5, "(во-оу) нам повезло"],
+            [19.2, "(о-оу) как ни странно (о-оу), мы летаем выше них"],
+            [22.5, "(во-оу) хочешь спросить"],
+            [24.2, "(во-оу) как так получилось"],
+            [25.8, "(о-оу) открою секрет"],
+            [27.5, "(о-оу) я просто перестал думать о них"],
+            [30.6, "сколько обещаний"],
+            [31.6, "ниче не делается"],
+            [33.7, "пора забыть, как нам было хорошо тогда"],
+            [36.9, "я сиял так много"],
+            [38.0, "моя батарейка умерла"],
+            [40.1, "вокруг столько зарядок"],
+            [41.5, "но ни одна не для меня"],
+            [43.9, "эй"],
+            [44.2, "почему ты веришь только в меня"],
+            [46.9, "пора нажать на газ"],
+            [48.3, "взять управление на себя"],
+            [50.1, "я так много могу рассказать"],
+            [51.8, "что делать я не стал"],
+            [53.2, "но теперь все по-другому"],
+            [54.8, "я разъебал весь этот стафф"],
+            [55.6, "делай как я"],
+            [57.3, "вверх и вниз, вверх и вниз"],
+            [58.9, "ты почувствуешь, что я чувствую"],
+            [60.9, "мы запишем дисс"],
+            [62.3, "нам не надо"],
+            [63.6, "громкие слёзы, я про них"],
+            [65.3, "расскажешь дома, как тебе было приятно"],
+            [68.0, "жить с этим"],
+            [69.1, "(во-оу) ну и что"],
+            [70.7, "(во-оу) нам повезло"],
+            [72.4, "(о-оу) как ни странно (о-оу), мы летаем выше них"],
+            [75.6, "(во-оу) хочешь спросить"],
+            [77.3, "(во-оу) как так получилось"],
+            [79.0, "(о-оу) открою секрет"],
+            [80.8, "(о-оу) я просто перестал думать о них"],
+            [83.0, "***"],
+            [88.0, "prod by centrlx"]
+        ];
+
+        lyrics.sort((a,b) => a[0] - b[0]);
+
+        function renderLyrics() {
+            karaokeBox.innerHTML = '';
+            lyrics.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'line';
+                div.dataset.index = index;
+                div.dataset.time = item[0];
+                div.textContent = item[1];
+                karaokeBox.appendChild(div);
+            });
+        }
+        renderLyrics();
+
+        function updateKaraoke(currentTime) {
+            if (!isKaraokeOn) return;
+            const lines = karaokeBox.querySelectorAll('.line');
+            let activeIndex = -1;
+            for (let i = 0; i < lyrics.length; i++) {
+                if (lyrics[i][0] <= currentTime) {
+                    activeIndex = i;
+                } else {
+                    break;
+                }
+            }
+            lines.forEach((el, idx) => {
+                el.classList.toggle('active', idx === activeIndex);
+            });
+            if (activeIndex >= 0 && lines[activeIndex]) {
+                lines[activeIndex].scrollIntoView({ block: 'center', behavior: 'auto' });
+            }
+        }
+
+        function updateUI() {
+            if (!audio.duration || isNaN(audio.duration)) {
+                timeDisplay.textContent = '00:00 / 00:00';
+                return;
+            }
+            const current = audio.currentTime;
+            const duration = audio.duration;
+            const percent = (current / duration) * 100;
+            seekBar.value = percent;
+
+            const fmt = (t) => {
+                const m = Math.floor(t / 60);
+                const s = Math.floor(t % 60);
+                return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+            };
+            timeDisplay.textContent = fmt(current) + ' / ' + fmt(duration);
+
+            if (isKaraokeOn) {
+                updateKaraoke(current);
+            }
+        }
+
+        function playAudio() {
+            audio.play().catch(() => {});
+            isPlaying = true;
+            playBtn.textContent = '⏸';
+            if (!updateInterval) {
+                updateInterval = setInterval(updateUI, 150);
+            }
+        }
+
+        function pauseAudio() {
+            audio.pause();
+            isPlaying = false;
+            playBtn.textContent = '▶';
+        }
+
+        playBtn.addEventListener('click', function() {
+            if (audio.paused) {
+                playAudio();
+            } else {
+                pauseAudio();
+            }
+        });
+
+        stopBtn.addEventListener('click', function() {
+            audio.pause();
+            audio.currentTime = 0;
+            isPlaying = false;
+            playBtn.textContent = '▶';
+            seekBar.value = 0;
+            updateUI();
+            if (isKaraokeOn) {
+                const lines = karaokeBox.querySelectorAll('.line');
+                lines.forEach(el => el.classList.remove('active'));
+            }
+        });
+
+        seekBar.addEventListener('input', function() {
+            if (audio.duration && !isNaN(audio.duration)) {
+                const val = parseFloat(this.value);
+                const time = (val / 100) * audio.duration;
+                audio.currentTime = time;
+                updateUI();
+            }
+        });
+
+        volumeControl.addEventListener('input', function() {
+            const val = parseInt(this.value);
+            audio.volume = val / 100;
+            volDisplay.textContent = val + '%';
+        });
+        audio.volume = 0.8;
+        volumeControl.value = 80;
+        volDisplay.textContent = '80%';
+
+        karaokeToggle.addEventListener('click', function() {
+            isKaraokeOn = !isKaraokeOn;
+            this.classList.toggle('active', isKaraokeOn);
+            if (isKaraokeOn) {
+                const lines = karaokeBox.querySelectorAll('.line');
+                lines.forEach(el => el.classList.remove('active'));
+                if (!audio.paused) {
+                    updateKaraoke(audio.currentTime);
+                }
+                karaokeBox.style.opacity = '1';
+            } else {
+                const lines = karaokeBox.querySelectorAll('.line');
+                lines.forEach(el => el.classList.remove('active'));
+            }
+        });
+
+        audio.addEventListener('loadedmetadata', function() {
+            updateUI();
+        });
+
+        audio.addEventListener('timeupdate', function() {
+            if (!updateInterval) {
+                updateUI();
+            }
+        });
+
+        audio.addEventListener('ended', function() {
+            isPlaying = false;
+            playBtn.textContent = '▶';
+            if (updateInterval) {
+                clearInterval(updateInterval);
+                updateInterval = null;
+            }
+            updateUI();
+            if (isKaraokeOn) {
+                const lines = karaokeBox.querySelectorAll('.line');
+                lines.forEach(el => el.classList.remove('active'));
+            }
+        });
+
+        setTimeout(() => {
+            updateUI();
+        }, 200);
+
+        audio.addEventListener('seeked', function() {
+            if (isKaraokeOn) {
+                updateKaraoke(audio.currentTime);
+            }
+        });
+
+        window.addEventListener('load', function() {
+            setTimeout(updateUI, 300);
+        });
+
+    })();
+</script>
+</body>
+</html>
